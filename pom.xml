@@ -59,6 +59,19 @@
             <scope>test</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.0.18</version>
+        </dependency>
+
         <!--Shiro-->
         <dependency>
             <groupId>org.apache.shiro</groupId>

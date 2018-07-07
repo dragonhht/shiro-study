@@ -1,12 +1,16 @@
 package hht.dragon.shiro
 
+import com.alibaba.druid.pool.DruidDataSource
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.config.IniSecurityManagerFactory
 import org.apache.shiro.mgt.DefaultSecurityManager
 import org.apache.shiro.realm.SimpleAccountRealm
+import org.apache.shiro.realm.jdbc.JdbcRealm
+import org.apache.shiro.realm.text.IniRealm
 import org.junit.Before
 import org.junit.Test
+import javax.sql.DataSource
 
 /**
  * Shiro学习.
@@ -56,6 +60,9 @@ class ShiroTest {
      */
     @Test
     fun firstTest() {
+
+        //val realm = IniRealm("classpath:shiro.ini")
+
         // 加载ini文件信息，并创建SecurityManager
         val factory = IniSecurityManagerFactory("classpath:shiro.ini")
         val manager = factory.instance
@@ -69,6 +76,49 @@ class ShiroTest {
         println(subject.isAuthenticated)
 
         println(subject.hasRole("schwartz"))
+    }
+
+
+    val dataSource = DruidDataSource()
+
+
+    /**
+     * 从数据库中获取权限信息.
+     */
+    @Test
+    fun testJdbc() {
+        // 数据源设置
+        dataSource.url = "jbdc:mysql://localhost:3306/shiro"
+        dataSource.username = "root"
+        dataSource.password = "123"
+
+        // 创建JdbcRealm
+        val jdbcRealm = JdbcRealm()
+        // 设置数据源
+        jdbcRealm.setDataSource(dataSource)
+
+        // 构建SecurityManager
+        val manager = DefaultSecurityManager()
+        manager.setRealm(jdbcRealm)
+        // 提交请求认证
+        SecurityUtils.setSecurityManager(manager)
+        val subject = SecurityUtils.getSubject()
+        // 模拟用户token
+        val token = UsernamePasswordToken("huang", "123")
+        // 登录
+        subject.login(token)
+
+        // 我们的数据库表可与系统的不一致，则需要自定义查询语句如
+//        val authenticatQuery = "select password from users where username = ?"
+//        jdbcRealm.setAuthenticationQuery(authenticatQuery)
+
+        println(subject.isAuthenticated)
+
+        // 检查用户是否具有角色
+        subject.checkRoles("admin", "user")
+        // 退出
+        subject.logout()
+        println(subject.isAuthenticated)
     }
 
 }
