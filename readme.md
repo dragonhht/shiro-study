@@ -252,6 +252,24 @@ class ShiroConfig {
 }
 ```
 
+-   用户登录
+
+```kotlin
+    @GetMapping("/login")
+    fun login(userName: String, password: String) : Mono<String> {
+        val subject = SecurityUtils.getSubject()
+
+        val token = UsernamePasswordToken(userName, password)
+        return try {
+            subject.login(token)
+            Mono.just("登录成功")
+        } catch (e : Exception) {
+            e.printStackTrace()
+            Mono.just("登录失败")
+        }
+    }
+```
+
 ### 使用注解
 
 -   需使用AOP，则需要添加AOP依赖
