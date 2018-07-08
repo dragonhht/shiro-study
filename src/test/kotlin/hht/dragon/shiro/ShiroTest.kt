@@ -3,7 +3,9 @@ package hht.dragon.shiro
 import com.alibaba.druid.pool.DruidDataSource
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authc.UsernamePasswordToken
+import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.config.IniSecurityManagerFactory
+import org.apache.shiro.crypto.hash.Md5Hash
 import org.apache.shiro.mgt.DefaultSecurityManager
 import org.apache.shiro.realm.SimpleAccountRealm
 import org.apache.shiro.realm.jdbc.JdbcRealm
@@ -23,7 +25,7 @@ class ShiroTest {
 
     @Before
     fun addUser() {
-        simpleAccountRealm.addAccount("huang", "123", "admin", "user")
+        simpleAccountRealm.addAccount("huang", "202cb962ac59075b964b07152d234b70", "admin", "user")
     }
 
     /**
@@ -31,6 +33,14 @@ class ShiroTest {
      */
     @Test
     fun testShiro() {
+
+        // 加密
+        val matchaer = HashedCredentialsMatcher()
+        // 使用md5加密
+        matchaer.hashAlgorithmName = "md5"
+        // 设置加密次数
+        matchaer.hashIterations = 1
+        simpleAccountRealm.setCredentialsMatcher(matchaer)
 
         // 构建SecurityManager
         val manager = DefaultSecurityManager()
@@ -121,4 +131,51 @@ class ShiroTest {
         println(subject.isAuthenticated)
     }
 
+    /**
+     * 自定义realm测试.
+     */
+    @Test
+    fun MyRealmTest() {
+
+        // 构造自定义realm
+        val myRealm = MyRealm()
+
+        // 加密
+        val matchaer = HashedCredentialsMatcher()
+        // 使用md5加密
+        matchaer.hashAlgorithmName = "md5"
+        // 设置加密次数
+        matchaer.hashIterations = 1
+        myRealm.credentialsMatcher = matchaer
+
+        // 构建SecurityManager
+        val manager = DefaultSecurityManager()
+        manager.setRealm(myRealm)
+
+        // 提交请求认证
+        SecurityUtils.setSecurityManager(manager)
+        val subject = SecurityUtils.getSubject()
+
+        // 模拟用户token
+        val token = UsernamePasswordToken("huang", "123")
+
+        // 登录
+        subject.login(token)
+        println(subject.isAuthenticated)
+
+        // 检查用户是否具有角色
+        subject.checkRoles("admin", "user")
+        // 检查用户是否有权限
+        subject.checkPermission("user:delete")
+
+        // 退出
+        subject.logout()
+        println(subject.isAuthenticated)
+    }
+
 }
+
+//fun main(args: Array<String>) {
+//    val md5 = Md5Hash("123", "huang")
+//    println(md5)
+//}

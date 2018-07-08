@@ -115,3 +115,26 @@ class ShiroTest {
         println(subject.isAuthenticated)
     }
 ```
+
+-   [自定义Realm](./src/test/kotlin/hht/dragon/shiro/MyRealm.kt)
+
+-   加密
+
+    -   校验时
+
+    ```kotlin
+    // 加密
+    val matchaer = HashedCredentialsMatcher()
+    // 使用md5加密
+    matchaer.hashAlgorithmName = "md5"
+    // 设置加密次数
+    matchaer.hashIterations = 1
+    myRealm.credentialsMatcher = matchaer
+    ```
+
+    -   使用盐时在自定义Realm中设置盐
+    
+    ```kotlin
+    // 设置盐
+    simpleAuthenticationInfo.credentialsSalt = ByteSource.Util.bytes("huang")
+    ```
