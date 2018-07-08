@@ -6,13 +6,15 @@ import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.mgt.DefaultSecurityManager
 import org.apache.shiro.mgt.SecurityManager
 import org.apache.shiro.spring.LifecycleBeanPostProcessor
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager
+import org.apache.shiro.web.mgt.WebSecurityManager
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
-import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor
-
-
+import org.springframework.web.filter.DelegatingFilterProxy
 
 
 /**
@@ -21,6 +23,7 @@ import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSource
  * Date: 18-7-8
  */
 @Configuration
+@Order(1)
 class ShiroConfig {
 
     /**
@@ -28,10 +31,12 @@ class ShiroConfig {
      */
     @Bean
     fun shiroFilter(securityManager: SecurityManager) : ShiroFilterFactoryBean {
+        println("ShiroFilter")
         val factoryBean = ShiroFilterFactoryBean()
 
         // 设置SecurityManager
         factoryBean.securityManager = securityManager
+
         // 设置登录界面请求，不设置则默认访问根目录下的"/login.jsp"
         factoryBean.loginUrl = "/static/login.html"
         // 设置登录成功后的跳转链接
@@ -50,15 +55,14 @@ class ShiroConfig {
         // 配置退出过滤器,其中的具体的退出代码Shiro已经替我们实现了
         filterChainDefinitionMap["/logout"] = "logout"
 
-        filterChainDefinitionMap["/index"] = "authc"
+        filterChainDefinitionMap["/user"] = "user"
+
         // 拦截器会按配置从上往下检查，所以"/**"请求放在最后
         // authc : 所有url都必须认证通过才可以访问
-        filterChainDefinitionMap["/**"] = "authc,roles[user]"
+        filterChainDefinitionMap["/**"] = "authc, roles[admin]"
 
         factoryBean.filterChainDefinitionMap = filterChainDefinitionMap
-        println("Shiro拦截器配置完毕")
-
-        SecurityUtils.setSecurityManager(securityManager)
+        println("Shiro拦截器配置完毕" )
 
         return factoryBean
     }
@@ -68,8 +72,10 @@ class ShiroConfig {
      */
     @Bean
     fun securityManager() : SecurityManager {
-        val manager = DefaultSecurityManager()
+        var manager = DefaultSecurityManager()
+        manager = DefaultWebSecurityManager()
         manager.setRealm(getRealm())
+        SecurityUtils.setSecurityManager(manager)
         return manager
     }
 

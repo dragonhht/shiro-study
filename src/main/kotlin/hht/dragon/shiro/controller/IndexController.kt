@@ -40,6 +40,11 @@ class IndexController {
         }
     }
 
+    @GetMapping("/user")
+    fun user() : Mono<String> {
+        return Mono.just("user")
+    }
+
     /**
      * 模拟跳转未授权界面.
      */
