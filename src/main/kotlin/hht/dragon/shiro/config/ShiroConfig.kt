@@ -1,20 +1,19 @@
 package hht.dragon.shiro.config
 
 import hht.dragon.shiro.MyRealm
+import hht.dragon.shiro.session.SessionDao
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher
-import org.apache.shiro.mgt.DefaultSecurityManager
 import org.apache.shiro.mgt.SecurityManager
+import org.apache.shiro.session.mgt.SessionManager
 import org.apache.shiro.spring.LifecycleBeanPostProcessor
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager
-import org.apache.shiro.web.mgt.WebSecurityManager
-import org.springframework.boot.web.servlet.FilterRegistrationBean
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
-import org.springframework.web.filter.DelegatingFilterProxy
 
 
 /**
@@ -72,9 +71,10 @@ class ShiroConfig {
      */
     @Bean
     fun securityManager() : SecurityManager {
-        var manager = DefaultSecurityManager()
-        manager = DefaultWebSecurityManager()
+        var manager = DefaultWebSecurityManager()
         manager.setRealm(getRealm())
+
+        manager.sessionManager = sessionManager()
         SecurityUtils.setSecurityManager(manager)
         return manager
     }
@@ -110,6 +110,21 @@ class ShiroConfig {
         val authorizationAttributeSourceAdvisor = AuthorizationAttributeSourceAdvisor()
         authorizationAttributeSourceAdvisor.securityManager = securityManager
         return authorizationAttributeSourceAdvisor
+    }
+
+    /**
+     * 配置SessionManager.
+     */
+    @Bean
+    fun sessionManager() : SessionManager {
+        val manager = DefaultWebSessionManager()
+        manager.sessionDAO = sessionDao()
+        return manager
+    }
+
+    @Bean
+    fun sessionDao() : SessionDao {
+        return SessionDao()
     }
 
 }
