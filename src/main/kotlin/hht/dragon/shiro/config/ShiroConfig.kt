@@ -1,6 +1,7 @@
 package hht.dragon.shiro.config
 
 import hht.dragon.shiro.MyRealm
+import hht.dragon.shiro.session.MyWebSessionManager
 import hht.dragon.shiro.session.SessionDao
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher
@@ -117,7 +118,7 @@ class ShiroConfig {
      */
     @Bean
     fun sessionManager() : SessionManager {
-        val manager = DefaultWebSessionManager()
+        val manager = MyWebSessionManager()
         manager.sessionDAO = sessionDao()
         return manager
     }

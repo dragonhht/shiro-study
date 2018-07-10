@@ -25,7 +25,7 @@ class RedisUtil {
     }
 
     fun expire(key: String, i: Long) {
-        redis.expire(key, i.toLong(), TimeUnit.SECONDS)
+        redis.expire(key, i, TimeUnit.SECONDS)
     }
 
     fun get(key: String): String? {

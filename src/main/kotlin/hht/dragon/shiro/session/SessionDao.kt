@@ -23,8 +23,26 @@ class SessionDao : AbstractSessionDAO() {
     /**
      * 生成redis键.
      */
-    fun key(key : String) : String {
+    private fun key(key : String) : String {
         return SHIRO_SESSION_PREFIX + key
+    }
+
+    /**
+     * 创建Session.
+     */
+    override fun doCreate(session: Session?): Serializable? {
+        println("创建Session")
+        // 获取SessionId
+        val sessionId = generateSessionId(session)
+        // 将Session与SessionId进行捆绑
+        assignSessionId(session, sessionId)
+        val key = key(session!!.id.toString())
+        val value = SerializationUtils.serialize(session).toString()
+        // 存储值
+        redisUtil.set(key, value)
+        // 设置过期时间
+        redisUtil.expire(key, 600)
+        return sessionId
     }
 
     /**
@@ -67,24 +85,6 @@ class SessionDao : AbstractSessionDAO() {
         val key = key(sessionId.toString())
         val value = redisUtil.get(key)
         return SerializationUtils.deserialize(value!!.toByteArray()) as Session?
-    }
-
-    /**
-     * 创建Session.
-     */
-    override fun doCreate(session: Session?): Serializable? {
-        println("创建Session")
-        // 获取SessionId
-        val sessionId = generateSessionId(session)
-        // 将Session与SessionId进行捆绑
-        assignSessionId(session, sessionId)
-        val key = key(session!!.id.toString())
-        val value = SerializationUtils.serialize(session).toString()
-        // 存储值
-        redisUtil.set(key, value)
-        // 设置过期时间
-        redisUtil.expire(key, 600)
-        return sessionId
     }
 
     /**
