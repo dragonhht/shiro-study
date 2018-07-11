@@ -308,3 +308,43 @@ class ShiroConfig {
         return Mono.just("测试注解")
     }
 ```
+
+-   Session管理
+
+    -   [自定义SessionDao](./src/main/kotlin/hht/dragon/shiro/session/SessionDao.kt)
+    
+    > 可自定义Session的保存，获取等方式，即可用于Session共享
+    
+    -   [自定义SessionManager](./src/main/kotlin/hht/dragon/shiro/session/MyWebSessionManager.kt)
+    
+    -   配置
+    
+    ```kotlin
+        /**
+         * 配置SessionManager.
+         */
+        @Bean
+        fun sessionManager() : SessionManager {
+            val manager = MyWebSessionManager()
+            manager.sessionDAO = sessionDao()
+            return manager
+        }
+    
+        @Bean
+        fun sessionDao() : SessionDao {
+            return SessionDao()
+        }
+
+        /**
+         * 配置SecurityManager.
+         */
+        @Bean
+        fun securityManager() : SecurityManager {
+            var manager = DefaultWebSecurityManager()
+            manager.setRealm(getRealm())
+            // 在SecurityManager中设置sessionManager
+            manager.sessionManager = sessionManager()
+            SecurityUtils.setSecurityManager(manager)
+            return manager
+        }
+    ```
