@@ -1,6 +1,7 @@
 package hht.dragon.shiro.config
 
 import hht.dragon.shiro.MyRealm
+import hht.dragon.shiro.filters.CustomFiter
 import hht.dragon.shiro.session.MyWebSessionManager
 import hht.dragon.shiro.session.SessionDao
 import org.apache.shiro.SecurityUtils
@@ -11,10 +12,10 @@ import org.apache.shiro.spring.LifecycleBeanPostProcessor
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager
-import org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
+import javax.servlet.Filter
 
 
 /**
@@ -43,6 +44,11 @@ class ShiroConfig {
         factoryBean.successUrl = "/index"
         // 设置未授权界面
         factoryBean.unauthorizedUrl = "/403"
+
+        // 添加自定义拦截器
+        val customFilters = mutableMapOf<String, Filter>()
+        customFilters.put("custom", customFiter())
+        factoryBean.filters = customFilters
 
         // 拦截器
         val filterChainDefinitionMap = LinkedHashMap<String, String>()
@@ -75,7 +81,7 @@ class ShiroConfig {
         var manager = DefaultWebSecurityManager()
         manager.setRealm(getRealm())
 
-        manager.sessionManager = sessionManager()
+        //manager.sessionManager = sessionManager()
         SecurityUtils.setSecurityManager(manager)
         return manager
     }
@@ -126,6 +132,11 @@ class ShiroConfig {
     @Bean
     fun sessionDao() : SessionDao {
         return SessionDao()
+    }
+
+    @Bean
+    fun customFiter(): CustomFiter {
+        return CustomFiter()
     }
 
 }
